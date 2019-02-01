@@ -173,6 +173,11 @@ return [
         // Carpooler\Providers\BroadcastServiceProvider::class,
         Carpooler\Providers\EventServiceProvider::class,
         Carpooler\Providers\RouteServiceProvider::class,
+
+        /*
+         * Additional Service Providers...
+         */
+        Cartalyst\Sentinel\Laravel\SentinelServiceProvider::class,
     ],
 
     /*
@@ -187,6 +192,9 @@ return [
     */
 
     'aliases' => [
+    	/*
+         * Laravel Framework Aliases...
+         */
         'App' => Illuminate\Support\Facades\App::class,
         'Artisan' => Illuminate\Support\Facades\Artisan::class,
         'Auth' => Illuminate\Support\Facades\Auth::class,
@@ -220,5 +228,12 @@ return [
         'URL' => Illuminate\Support\Facades\URL::class,
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
+
+        /*
+         * Additional Aliases...
+         */
+        'Activation' => Cartalyst\Sentinel\Laravel\Facades\Activation::class,
+        'Reminder'   => Cartalyst\Sentinel\Laravel\Facades\Reminder::class,
+        'Sentinel'   => Cartalyst\Sentinel\Laravel\Facades\Sentinel::class,
     ],
 ];
