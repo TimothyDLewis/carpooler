@@ -34,6 +34,7 @@ class Kernel extends HttpKernel
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \Carpooler\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \Carpooler\Http\Middleware\Globals::class
         ],
 
         'api' => [
@@ -56,5 +57,14 @@ class Kernel extends HttpKernel
         'can' => \Illuminate\Auth\Middleware\Authorize::class,
         'guest' => \Carpooler\Http\Middleware\RedirectIfAuthenticated::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
+
+        'sentinel.auth' => \Carpooler\Http\Middleware\Sentinel\Authenticate::class,
+        'sentinel.guest' => \Carpooler\Http\Middleware\Sentinel\RedirectIfAuthenticated::class,
+        'sentinel.has-store' => \Carpooler\Http\Middleware\Sentinel\HasStore::class,
+
+        'sentinel.roles.super-user' => \Carpooler\Http\Middleware\Sentinel\Roles\SuperUser::class,
+        'sentinel.roles.admin' => \Carpooler\Http\Middleware\Sentinel\Roles\Admin::class,
+        'sentinel.roles.dealer' => \Carpooler\Http\Middleware\Sentinel\Roles\Dealer::class,
+        'sentinel.roles.customer' => \Carpooler\Http\Middleware\Sentinel\Roles\Customer::class
     ];
 }

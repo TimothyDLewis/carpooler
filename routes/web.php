@@ -15,6 +15,11 @@ Route::get("/test", function(){
 	
 });
 
-Route::get("/", function(){
-	dd("Coming Soon &tm;");
+Route::get("/", "DefaultController@getIndex");
+
+Route::group([], function(){
+	Route::get("/login", "AuthController@getLogin");
+	Route::post("/login", "AuthController@postLogin");
+
+	Route::any("/logout", "AuthController@anyLogout");
 });
