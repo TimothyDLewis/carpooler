@@ -139,7 +139,7 @@ return [
     */
 
     'activations' => [
-        'model' => Carpooler\Models\Activiation::class,
+        'model' => Carpooler\Models\Activation::class,
         'expires' => 259200,
         'lottery' => [2, 100],
     ],
