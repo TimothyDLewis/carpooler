@@ -9,17 +9,31 @@
 		@yield("title")
 	</title>
 	<link href="//fonts.googleapis.com/css?family=Roboto:400,300" rel="stylesheet" type="text/css"/>
-	<link href="{{ asset("css/bootstrap.min.css") }}" rel="stylesheet"/>
 	<link href="{{ asset("css/font-awesome-4.7.0.min.css") }}" rel="stylesheet"/>
+	<link href="{{ asset("css/bootstrap.min.css") }}" rel="stylesheet"/>
+	<link href="{{ asset("css/light-bootstrap-dashboard.css") }}" rel="stylesheet"/>
 	<style type="text/css">
-		.flexRow {
-			display: flex;
-			flex-wrap: wrap;
+		.nav-mobile-menu {
+			display: none !important;
 		}
 
-		.flexRow > div[class^="col-"] {
-			display: flex;
-			/*justify-content: space-between;*/
+		.navbar-static-text {
+			font-weight: 400;
+			margin: 5px 0px;
+			font-size: 20px;
+			color: #888888;
+			display: inline-block;
+			padding-top: .3125rem;
+			padding-bottom: .3125rem;
+			white-space: nowrap;
+		}
+
+		.alert[data-notify="container"] {
+			border-radius: 0;
+		}
+
+		.alert button.close {
+			background-color: inherit;
 		}
 	</style>
 	@yield("styles")
@@ -28,51 +42,52 @@
 	<!--[if lt IE 9]><script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script> <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script><![endif]-->
 </head>
 <body>
-	<nav class="navbar navbar-dark navbar-expand-lg navbar-light bg-dark mb-3">
-		<a class="navbar-brand" href="{{ url("/") }}">Carpooler</a>
-		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent">
-			<span class="navbar-toggler-icon"></span>
-		</button>
-		<div class="collapse navbar-collapse" id="navbarSupportedContent">
-			<ul class="navbar-nav mr-auto">
-				<li class="nav-item {{ request()->is("events") || request()->is("events/*") ? "active" : "" }}"><a class="nav-link" href="{{ url("/events") }}">Events</a></li>
-			</ul>
-			<ul class="navbar-nav navbar-right">
-				@if($authUser)
-				<li class="nav-item">
-					<a class="nav-link" href="{{ url("/profile") }}">
-						Welcome, {{ $authUser->full_name }}
-					</a>
-				</li>
-				<li class="nav-item">
-					<a class="nav-link" href="{{ url("/logout") }}">
-						<i class="fa fa-sign-out"></i> Logout
-					</a>
-				</li>
-				@else
-				<li class="nav-item">
-					<a class="nav-link" href="{{ url("/login") }}">
-						<i class="fa fa-sign-in"></i> Login
-					</a>
-				</li>
-				@endif
-			</ul>
-		</div>
-	</nav>
-	<div class="container-fluid">
-		<div class="row">
-			<div class="col-12">
-				@include("partials.feedback")
+	<div class="wrapper">
+		<div class="sidebar" data-image="{{ asset("img/sidebar-5.jpg") }}" data-color="{{ $authUser ? $authUser->sidebar ? $authUser->sidebar : "black" : "black" }}">
+			<div class="sidebar-wrapper">
+				@include("components.sidebar")
 			</div>
 		</div>
-		@yield("content")
+		<div class="main-panel">
+			<nav class="navbar navbar-expand-lg" color-on-scroll="500">
+				<div class="container-fluid">
+					<p class="navbar-static-text" style="cursor: default;">@yield("breadcrumb", "Home")</p>
+					<button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" aria-controls="navigation-index" aria-expanded="false" aria-label="Toggle navigation">
+						<span class="navbar-toggler-bar burger-lines"></span>
+						<span class="navbar-toggler-bar burger-lines"></span>
+						<span class="navbar-toggler-bar burger-lines"></span>
+					</button>
+				</div>
+			</nav>
+			@include("partials.feedback")
+			<div class="content">
+				<div class="container-fluid">
+					@yield("content")
+				</div>
+			</div>
+			<footer class="footer">
+                <div class="container-fluid">
+                    <nav class="navbar">
+                        <p class="navbar-static-text">
+                        	<span class="d-block d-sm-none">XS</span>
+                        	<span class="d-none d-sm-block d-md-none">SM</span>
+                        	<span class="d-none d-md-block d-lg-none">MD</span>
+                        	<span class="d-none d-lg-block d-xl-none">LG</span>
+                        	<span class="d-none d-xl-block">XL</span>
+                        </p>
+                    </nav>
+                </div>
+            </footer>
+		</div>
 	</div>
-	@yield("modals")
-	<script src="{{ asset("js/jquery-3.2.1.min.js") }}" type="text/javascript"></script>
-	<script src="{{ asset("js/bootstrap.min.js") }}" type="text/javascript"></script>
+	<script src="{{ asset("js/core/jquery.3.2.1.min.js") }}" type="text/javascript"></script>
+	<script src="{{ asset("js/core/popper.min.js") }}" type="text/javascript"></script>
+	<script src="{{ asset("js/core/bootstrap.min.js") }}" type="text/javascript"></script>
+	<script src="{{ asset("js/light-bootstrap-dashboard.js") }}" type="text/javascript"></script>
 	<script type="text/javascript">
-		
+		$(document).ready(function(){
+
+		});
 	</script>
-	@yield("scripts")
 </body>
 </html>

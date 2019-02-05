@@ -2,6 +2,8 @@
 
 namespace Carpooler\Http\Controllers;
 
+use Sentinel;
+
 use Carpooler\Http\Controllers\Controller;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -31,6 +33,8 @@ class AuthController extends Controller {
 			"password" => "required|confirmed"
 		];
 
+		$validator = \Validator::make($request->all(), $rules);
+
 		if($validator->passes()){
 			\DB::beginTransaction();
 
@@ -56,13 +60,13 @@ class AuthController extends Controller {
 				\DB::rollBack();
 
 				\Log::info("Error Regisering new User: ".$ex->getMessage()." in ".$ex->getFile()." at line ".$ex->getLine());
-				$feedback = new FeedbackObject("danger", "fa fa-times-circle fa-3x pull-left", "Unable to Register new User.<br/>Please contact Support.");
+				$feedback = new FeedbackObject("danger", "fa fa-times-circle", "Unable to Register new User.<br/>Please contact Support.");
 				return redirect("/register")->withErrors($validator)->withInput()->with(["feedback" => $feedback]);
 			}
 
 			\DB::commit();
 
-			\Sentinel::login($user);
+			Sentinel::login($user);
 
 			if($redirect = session()->get("loginRedirect")){
 	        	session()->forget("loginRedirect");
@@ -70,7 +74,7 @@ class AuthController extends Controller {
 	        }
 
 			$feedback = new FeedbackObject("success", "fa fa-check-circle", "New User registered!");
-			return redirect("/register")->with(["feedback" => $feedback]);
+			return redirect("/")->with(["feedback" => $feedback]);
 		} else {
 			$feedback = new FeedbackObject("danger", "fa fa-times-circle", "Please fix the errors below.");
 			return redirect("/register")->withErrors($validator)->withInput()->with(["feedback" => $feedback]);
@@ -93,36 +97,36 @@ class AuthController extends Controller {
         $validator = \Validator::make($request->all(), $rules);
 
         if($validator->passes()){
-        	$user = \Sentinel::findUserByCredentials([
+        	$user = Sentinel::findUserByCredentials([
         		"email" => $request->input("email")
     		]);
 
     		$forceReset = false;
 
     		if(!$user){
-                $feedback = new FeedbackObject("danger", "fa fa-times-circle fa-3x pull-left", "Unable to find user with the supplied email address.<br/>Please check your email and try again.");
+                $feedback = new FeedbackObject("danger", "fa fa-times-circle", "Unable to find user with the supplied email address.<br/>Please check your email and try again.");
     			return redirect($redirect)->withErrors($validator)->withInput()->with(["feedback" => $feedback]);
     		} else {
                 if(!$user->isActivated()){
-                    $feedback = new FeedbackObject("danger", "fa fa-times-circle fa-3x pull-left", "User account is currently inactive.<br/>Please contact Support.");
+                    $feedback = new FeedbackObject("danger", "fa fa-times-circle", "User account is currently inactive.<br/>Please contact Support.");
                     return redirect($redirect)->withErrors($validator)->withInput()->with(["feedback" => $feedback]);
                 } else {
                     try {
-                        $isAuthenticated = \Sentinel::authenticate([
+                        $isAuthenticated = Sentinel::authenticate([
                             "email" => $request->input("email"),
                             "password" => $request->input("password")
                         ]);
 
                         if(!$isAuthenticated){
-                            $feedback = new FeedbackObject("danger", "fa fa-times-circle fa-3x pull-left", "Incorrect email and password combination.<br/>Please re-enter your email and/or password and try again.");
+                            $feedback = new FeedbackObject("danger", "fa fa-times-circle", "Incorrect email and password combination.<br/>Please re-enter your email and/or password and try again.");
                             return redirect($redirect)->withErrors($validator)->withInput()->with(["feedback" => $feedback]);
                         }
-                    } catch (\Cartalyst\Sentinel\Checkpoints\ThrottlingException $te){
+                    } catch (\CartalystSentinel\Checkpoints\ThrottlingException $te){
                         $string = $te->getDelay()." second".($te->getDelay() == 1 ? "" : "s");
-                        $feedback = new FeedbackObject("danger", "fa fa-times-circle fa-3x pull-left", "Suspicious activity has been detected and you have been denied access.<br/>Please try again in <b>".$string."</b>, or contact Support.");
+                        $feedback = new FeedbackObject("danger", "fa fa-times-circle", "Suspicious activity has been detected and you have been denied access.<br/>Please try again in <b>".$string."</b>, or contact Support.");
                         return redirect($redirect)->withErrors($validator)->withInput()->with(["feedback" => $feedback]);
-                    } catch (\Cartalyst\Sentinel\Checkpoints\NotActivatedException $nae){
-                        $feedback = new FeedbackObject("danger", "fa fa-times-circle fa-3x pull-left", "Your account has not been activated.<br/>Please contact Support.");
+                    } catch (\CartalystSentinel\Checkpoints\NotActivatedException $nae){
+                        $feedback = new FeedbackObject("danger", "fa fa-times-circle", "Your account has not been activated.<br/>Please contact Support.");
                         return redirect($redirect)->withErrors($validator)->withInput()->with(["feedback" => $feedback]);
                     }
                 }
@@ -135,11 +139,11 @@ class AuthController extends Controller {
         }
 	}
 
-	public function getReminder(){
+	public function getRemind(){
 		return view("auth.remind");
 	}
 
-	public function postReminder(Request $request){
+	public function postRemind(Request $request){
 
 		$redirect = "/remind";
 		$resetUrl = "/reset";
@@ -155,7 +159,7 @@ class AuthController extends Controller {
         		"email" => $request->input("email")
         	];
 
-        	$user = \Sentinel::findByCredentials($info);
+        	$user = Sentinel::findByCredentials($info);
         	if(!$user){
         		$feedback = new FeedbackObject("danger", "fa fa-times-circle", "Unable to find user with that email address.");
     			return redirect($redirect)->withErrors($validator)->withInput()->with(["feedback" => $feedback]);
@@ -180,7 +184,7 @@ class AuthController extends Controller {
 			if(env("APP_ENV") == "local"){
 				return redirect($resetUrl."/".$reminder->code);
             } else {
-                $feedback = new FeedbackObject("danger", "fa fa-times-circle fa-3x pull-left", "Password reset email sent to <b>".$user->email."</b>.<br/>Please follow the link in the email to reset your password.");
+                $feedback = new FeedbackObject("danger", "fa fa-times-circle", "Password reset email sent to <b>".$user->email."</b>.<br/>Please follow the link in the email to reset your password.");
             	return redirect("/remind")->with(["feedback" => $feedback]);
             }
         } else {
@@ -193,10 +197,12 @@ class AuthController extends Controller {
 		$check = Reminder::where("code", "=", $code)->first();
 
 		if(!$check){
-            abort(403, "Unauthorized");
+        	$feedback = new FeedbackObject("danger", "fa fa-times-circle", "Unable to find password reset from supplied code.<br/>Please check your code and try again.");
+        	return redirect("/")->with(["feedback" => $feedback]);
         } else {
             if($check->isExpired() || $check->isCompleted() ){
-                abort(403, "Unauthorized");
+            	$feedback = new FeedbackObject("danger", "fa fa-times-circle", "Supplied code is expired, completed or otherwise invalid. Please generate a new password reset code.");
+            	return redirect("/")->with(["feedback" => $feedback]);
             }
         }
 
@@ -209,10 +215,12 @@ class AuthController extends Controller {
         $check = Reminder::where("code", "=", $code)->first();
 
         if(!$check){
-            abort(403, "Unauthorized");
+        	$feedback = new FeedbackObject("danger", "fa fa-times-circle", "Unable to find password reset from supplied code.<br/>Please check your code and try again.");
+        	return redirect("/")->with(["feedback" => $feedback]);
         } else {
             if($check->isExpired() || $check->isCompleted() ){
-                abort(403, "Unauthorized");
+            	$feedback = new FeedbackObject("danger", "fa fa-times-circle", "Supplied code is expired, completed or otherwise invalid. Please generate a new password reset code.");
+            	return redirect("/")->with(["feedback" => $feedback]);
             }
         }
 
@@ -220,10 +228,11 @@ class AuthController extends Controller {
             "email" => "required|email",
             "password" => "required|confirmed",
         ];
+
 		$validator = \Validator::make($request->all(), $rules);
 
         if($validator->passes()){
-        	$user = \Sentinel::findByCredentials([
+        	$user = Sentinel::findByCredentials([
         		"email" => $request->input("email")
     		]);
 
@@ -235,7 +244,7 @@ class AuthController extends Controller {
     				$feedback = new FeedbackObject("danger", "fa fa-times-circle", "Incorrect email supplied for reset token.");
     				return redirect($redirect)->withErrors($validator)->withInput()->with(["feedback" => $feedback]);
     			} else {
-	    			$validatedUser = \Sentinel::validateCredentials($user, [
+	    			$validatedUser = Sentinel::validateCredentials($user, [
 	    				"email" => $request->input("email"),
 	    				"password" => $request->input("password")
 					]);
@@ -246,7 +255,7 @@ class AuthController extends Controller {
 					} else {
 						$reminder = \Reminder::complete($user, $code, $request->input("password"));
 						if(!$reminder){
-							$feedback = new FeedbackObject("danger", "fa fa-times-circle fa-3x pull-left", "There was an error updating your password.<br/>Please contact an administrator.");
+							$feedback = new FeedbackObject("danger", "fa fa-times-circle", "There was an error updating your password.<br/>Please contact an administrator.");
 							return redirect($redirect)->withErrors($validator)->withInput()->with(["feedback" => $feedback]);
 						}
 					}
@@ -256,9 +265,11 @@ class AuthController extends Controller {
     		$user->last_login = Carbon::now();
     		$user->save();
 
+    		Sentinel::login($user);
+
 			$redirect = "/login";
 
-            $feedback = new FeedbackObject("info", "fa fa-info-circle fa-3x pull-left", "Password has been reset.<br/>Please login with your new password.");
+            $feedback = new FeedbackObject("info", "fa fa-info-circle", "Password has been reset.<br/>You have been logged in.");
 			return redirect($redirect)->with(["feedback" => $feedback]);
         } else {
         	$feedback = new FeedbackObject("danger", "fa fa-times-circle", "Please fix the errors below.");
@@ -267,11 +278,11 @@ class AuthController extends Controller {
 	}
 
 	public function anyLogout(){
-		$user = \Sentinel::getUser();
+		$user = Sentinel::getUser();
 
 		if($user){
 			$redirect = "/login";
-			\Sentinel::logout();
+			Sentinel::logout();
 			return redirect($redirect);
 		}
 

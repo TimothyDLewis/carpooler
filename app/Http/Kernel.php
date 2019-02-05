@@ -60,11 +60,8 @@ class Kernel extends HttpKernel
 
         'sentinel.auth' => \Carpooler\Http\Middleware\Sentinel\Authenticate::class,
         'sentinel.guest' => \Carpooler\Http\Middleware\Sentinel\RedirectIfAuthenticated::class,
-        'sentinel.has-store' => \Carpooler\Http\Middleware\Sentinel\HasStore::class,
 
-        'sentinel.roles.super-user' => \Carpooler\Http\Middleware\Sentinel\Roles\SuperUser::class,
         'sentinel.roles.admin' => \Carpooler\Http\Middleware\Sentinel\Roles\Admin::class,
-        'sentinel.roles.dealer' => \Carpooler\Http\Middleware\Sentinel\Roles\Dealer::class,
-        'sentinel.roles.customer' => \Carpooler\Http\Middleware\Sentinel\Roles\Customer::class
+        'sentinel.roles.organizer' => \Carpooler\Http\Middleware\Sentinel\Roles\Dealer::class
     ];
 }
